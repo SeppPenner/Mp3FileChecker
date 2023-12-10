@@ -9,6 +9,9 @@ Mp3FileChecker is an executable to check mp3 files for sanity.
 [![GitHub stars](https://img.shields.io/github/stars/SeppPenner/Mp3FileChecker.svg)](https://github.com/SeppPenner/Mp3FileChecker/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://raw.githubusercontent.com/SeppPenner/Mp3FileChecker/master/License.txt)
 [![Known Vulnerabilities](https://snyk.io/test/github/SeppPenner/Mp3FileChecker/badge.svg)](https://snyk.io/test/github/SeppPenner/Mp3FileChecker)
+[![Blogger](https://img.shields.io/badge/Follow_me_on-blogger-orange)](https://franzhuber23.blogspot.de/)
+[![Patreon](https://img.shields.io/badge/Patreon-F96854?logo=patreon&logoColor=white)](https://patreon.com/SeppPennerOpenSourceDevelopment)
+[![PayPal](https://img.shields.io/badge/PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/th070795)
 
 ## Available for
 * Net 7.0
