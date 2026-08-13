@@ -90,7 +90,7 @@ dotnet run --project src/Mp3FileChecker/Mp3FileChecker.csproj -- --music-folder 
 - Single target framework `net10.0`, no multi-targeting, no `RuntimeIdentifiers` in the project file.
   `buildForWindows.bat` pins `win-x64` and `--self-contained true` on the command line, so the
   shipped tool needs no installed runtime. The publish is around 214 files and 78 MB, the zip of it
-  around 34 MB. The batch stops with an error instead of printing "Build successful" when the
+  around 36 MB, which is what every release adds to the git history for good. The batch stops with an error instead of printing "Build successful" when the
   publish fails, otherwise a failed publish would be zipped into a release as the old output.
 - All build properties live directly in `src/Mp3FileChecker/Mp3FileChecker.csproj`. There is **no**
   `Directory.Build.props` in this repository.
