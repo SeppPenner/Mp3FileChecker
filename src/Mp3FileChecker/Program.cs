@@ -47,17 +47,25 @@ public static class Program
             .WriteTo.File($"log{DateTimeOffset.Now:yyyyMMdd_HHmmss}.txt")
             .CreateLogger();
 
-        // Get and validate settings.
-        if (string.IsNullOrWhiteSpace(musicFolder))
+        try
         {
-            Log.Error("The music folder was empty");
-            return;
+            // Get and validate settings.
+            if (string.IsNullOrWhiteSpace(musicFolder))
+            {
+                Log.Error("The music folder was empty");
+                return;
+            }
+
+            useTestMode = testMode;
+
+            // Iterate the folders below the main music folder.
+            IterateFolder(musicFolder, 0);
         }
-
-        useTestMode = testMode;
-
-        // Iterate the folders below the main music folder.
-        IterateFolder(musicFolder, 0);
+        finally
+        {
+            // Write the pending log events before the process ends.
+            Log.CloseAndFlush();
+        }
     }
 
     /// <summary>
@@ -76,7 +84,7 @@ public static class Program
         // Check all sub folders first.
         foreach (var subFolder in Directory.GetDirectories(folderPath))
         {
-            IterateFolder(subFolder, currentDepth++);
+            IterateFolder(subFolder, currentDepth + 1);
         }
 
         // Check files afterwards.
@@ -153,7 +161,7 @@ public static class Program
         // Get an check the album name from the folder path.
         var albumNameFromFolder = AlbumHelper.GetAlbumNameFromFolder(folderPath);
 
-        if (!AlbumHelper.IsValid(artistNameFromFolder))
+        if (!AlbumHelper.IsValid(albumNameFromFolder))
         {
             return;
         }
@@ -206,7 +214,7 @@ public static class Program
         }
 
         // 3. Does the title only contain valid chars?
-        if (!tagFile.Tag.Title.All(allowedTitleChars.Contains))
+        if (!string.IsNullOrWhiteSpace(tagFile.Tag.Title) && !tagFile.Tag.Title.All(allowedTitleChars.Contains))
         {
             Log.Error("The title {Title} for the file {FilePath} contains not allowed characters", tagFile.Tag.Title, filePath);
         }
