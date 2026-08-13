@@ -88,7 +88,10 @@ dotnet run --project src/Mp3FileChecker/Mp3FileChecker.csproj -- --music-folder 
 ```
 
 - Single target framework `net10.0`, no multi-targeting, no `RuntimeIdentifiers` in the project file.
-  The publish in `buildForWindows.bat` pins `win-x64` on the command line.
+  `buildForWindows.bat` pins `win-x64` and `--self-contained true` on the command line, so the
+  shipped tool needs no installed runtime. The publish is around 214 files and 78 MB, the zip of it
+  around 34 MB. The batch stops with an error instead of printing "Build successful" when the
+  publish fails, otherwise a failed publish would be zipped into a release as the old output.
 - All build properties live directly in `src/Mp3FileChecker/Mp3FileChecker.csproj`. There is **no**
   `Directory.Build.props` in this repository.
 - `TreatWarningsAsErrors` is enabled, so every warning breaks the build, NuGet warnings (`NU****`)
@@ -189,10 +192,11 @@ Do not silently "clean up" these, they are existing behaviour:
   same commit as a framework change instead of leaving it behind again.
 - **AppVeyor badge without CI in the repository.** `README.md` links an AppVeyor build that is
   configured outside of this repository. There is no `.github` folder and no pipeline file here.
-- **`.gitignore` does not cover the publish output.** `buildForWindows.bat` writes into
-  `src/Mp3FileChecker/publish`, and only `*.exe` and `*.pdb` inside it are ignored, the DLLs are not.
-  After a publish that folder shows up as untracked, a `git add -A` would swallow it. Only the zip
-  below `Published` belongs into the repository.
+- **The publish folder is ignored, the zip is not.** `buildForWindows.bat` writes into
+  `src/Mp3FileChecker/publish`, which `.gitignore` covers since version 1.0.3.0. Before that only
+  `*.exe` and `*.pdb` in it were ignored and a `git add -A` after a publish would have swallowed 200
+  DLLs. The rule is `publish/`, it does not touch the `Published` folder, whose zips are the release
+  artifacts and belong into the repository.
 - **`.gitattributes` sets `* text=auto`** and every rule of the Visual Studio template below it is
   commented out. The `publish.zip` files are only treated as binary because git guesses right on
   their content. Any further binary file needs its own rule.
@@ -213,6 +217,12 @@ The history of this repository shows the pattern, follow it:
    `Published/<version>/publish.zip` (the zip keeps the `publish` folder as its top level entry) and
    commit that as a follow-up commit, the way `51fb0f3` and `15cd886` did it.
 6. Push the commits and the tag.
+
+Two things about step 5 on this machine. `cmd` runs with `NoDefaultCurrentDirectoryInExePath`, so
+the batch has to be started as `call .\buildForWindows.bat` from the repository root, the `cd
+src\Mp3FileChecker` inside it is relative to that. And when a private feed is unreachable, add
+`--source https://api.nuget.org/v3/index.json` to the `dotnet publish` line of that run, do not pin
+the source in the batch, it has to keep working on other machines.
 
 The version in the `Changelog.md` has four parts (`1.0.3.0`), the tag has three (`1.0.3`), the folder
 below `Published` uses the three part form as well.
