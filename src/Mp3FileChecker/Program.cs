@@ -73,7 +73,7 @@ public static class Program
     /// </summary>
     /// <param name="folderPath">The folder path.</param>
     /// <param name="currentDepth">The current folder depth.</param>
-    private static void IterateFolder(string folderPath, int currentDepth)
+    internal static void IterateFolder(string folderPath, int currentDepth)
     {
         if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
         {

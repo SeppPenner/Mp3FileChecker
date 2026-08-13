@@ -8,9 +8,11 @@ a part of them is corrected in the file itself unless the test mode is on. The r
 application, it is **not** published as a NuGet package: no `GeneratePackageOnBuild`, no push
 script, no installer. The release artifact is a zip of the publish output below `Published`.
 
-One solution `src/Mp3FileChecker.sln` with exactly one project:
+One solution `src/Mp3FileChecker.sln` with exactly two projects:
 
-- `src/Mp3FileChecker/Mp3FileChecker.csproj`, `OutputType` `Exe`, target framework `net10.0`.
+- `src/Mp3FileChecker/Mp3FileChecker.csproj`, `OutputType` `Exe`, target framework `net10.0`, the
+  actual tool.
+- `src/Mp3FileChecker.Tests/Mp3FileChecker.Tests.csproj`, MSTest, added in version 1.0.3.0.
 
 Layout inside `src/Mp3FileChecker`:
 
@@ -26,6 +28,21 @@ Layout inside `src/Mp3FileChecker`:
   `GetAlbumNameFromFolder`.
 - `GlobalUsings.cs`: all usings of the project, including the aliases `TagLibFile` and
   `TagLibIPicture`.
+
+Layout inside `src/Mp3FileChecker.Tests`:
+
+- `FolderIterationTests.cs`: the folder walk, that is the depth of every level, the depth of the
+  music folder after its sub folders have been walked, an invalid and a valid album folder name and
+  a folder that does not exist. Each test builds its tree below `Path.GetTempPath()` and deletes it
+  afterwards, so a test run leaves the working tree untouched.
+- `ArtistHelperTests.cs` and `AlbumHelperTests.cs`: the allowed characters and the names read from a
+  folder path, including the underscore rule and the paths that are rejected.
+- `StringExtensionsTests.cs` and `ObjectExtensionsTests.cs`: the two extension methods.
+- `LogCollector.cs`: a Serilog sink that keeps the log events in memory. The checked code has no
+  return values, it reports through the static `Log` class, so the tests set `Log.Logger` to this
+  sink and assert on the message templates. Match a finding by its template text, not by the
+  rendered message.
+- `GlobalUsings.cs`: all usings of the test project.
 
 Repository root: `README.md` (uppercase, the sibling repositories use `Readme.md`), `Changelog.md`,
 `License.txt` (MIT), `buildForWindows.bat`, the `Published` folder with one `publish.zip` per
@@ -60,6 +77,10 @@ always removed.
 dotnet build src/Mp3FileChecker.sln
 ```
 
+```powershell
+dotnet test src/Mp3FileChecker.sln
+```
+
 Running it, the parameters of `Main` are the command line options, see the quirks:
 
 ```powershell
@@ -82,9 +103,17 @@ dotnet run --project src/Mp3FileChecker/Mp3FileChecker.csproj -- --music-folder 
   or `NU1301`, and `TreatWarningsAsErrors` turns that into a build error. Then build with an
   explicit source:
   `dotnet build src/Mp3FileChecker.sln --source https://api.nuget.org/v3/index.json`.
-- There is no test project in this repository. A behaviour change is verified by building and by
-  running the tool with `--test-mode` against a small folder tree, which logs everything and writes
-  nothing. Never claim a run happened without running it.
+- Tests are MSTest, in the single test project `src/Mp3FileChecker.Tests`, which follows the same
+  package set as the sibling repositories: `Microsoft.NET.Test.Sdk`, `MSTest.TestAdapter`,
+  `MSTest.TestFramework`, `coverlet.collector` and `GitVersion.MsBuild`. `dotnet test` runs 26 tests,
+  they need no network, no MP3 file and no fixture outside the repository. Never claim a test run
+  happened without running it.
+- `Program.IterateFolder` is `internal` and the project file grants
+  `<InternalsVisibleTo Include="Mp3FileChecker.Tests" />` so that the folder walk can be driven
+  without a command line. Everything below it stays private, a new test reaches it through
+  `IterateFolder`.
+- Beyond the tests, a behaviour change is verified by running the tool with `--test-mode` against a
+  small folder tree, which logs everything and writes nothing.
 
 ## Code conventions
 

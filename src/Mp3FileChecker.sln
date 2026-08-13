@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31612.314
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mp3FileChecker", "Mp3FileChecker\Mp3FileChecker.csproj", "{65534866-22B0-4843-AA20-CE31AB5A75F5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mp3FileChecker.Tests", "Mp3FileChecker.Tests\Mp3FileChecker.Tests.csproj", "{69B70FF7-0EC0-477D-A22C-88E274F160B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,14 @@ Global
 		{65534866-22B0-4843-AA20-CE31AB5A75F5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{65534866-22B0-4843-AA20-CE31AB5A75F5}.Release|x64.ActiveCfg = Release|Any CPU
 		{65534866-22B0-4843-AA20-CE31AB5A75F5}.Release|x64.Build.0 = Release|Any CPU
+		{69B70FF7-0EC0-477D-A22C-88E274F160B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69B70FF7-0EC0-477D-A22C-88E274F160B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69B70FF7-0EC0-477D-A22C-88E274F160B6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{69B70FF7-0EC0-477D-A22C-88E274F160B6}.Debug|x64.Build.0 = Debug|Any CPU
+		{69B70FF7-0EC0-477D-A22C-88E274F160B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69B70FF7-0EC0-477D-A22C-88E274F160B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69B70FF7-0EC0-477D-A22C-88E274F160B6}.Release|x64.ActiveCfg = Release|Any CPU
+		{69B70FF7-0EC0-477D-A22C-88E274F160B6}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
