@@ -10,7 +10,7 @@ script, no installer. The release artifact is a zip of the publish output below 
 
 One solution `src/Mp3FileChecker.sln` with exactly one project:
 
-- `src/Mp3FileChecker/Mp3FileChecker.csproj`, `OutputType` `Exe`, target framework `net9.0`.
+- `src/Mp3FileChecker/Mp3FileChecker.csproj`, `OutputType` `Exe`, target framework `net10.0`.
 
 Layout inside `src/Mp3FileChecker`:
 
@@ -66,7 +66,7 @@ Running it, the parameters of `Main` are the command line options, see the quirk
 dotnet run --project src/Mp3FileChecker/Mp3FileChecker.csproj -- --music-folder "D:\Music" --test-mode
 ```
 
-- Single target framework `net9.0`, no multi-targeting, no `RuntimeIdentifiers` in the project file.
+- Single target framework `net10.0`, no multi-targeting, no `RuntimeIdentifiers` in the project file.
   The publish in `buildForWindows.bat` pins `win-x64` on the command line.
 - All build properties live directly in `src/Mp3FileChecker/Mp3FileChecker.csproj`. There is **no**
   `Directory.Build.props` in this repository.
@@ -77,9 +77,11 @@ dotnet run --project src/Mp3FileChecker/Mp3FileChecker.csproj -- --music-folder 
   vulnerable transitive package fails the build too.
 - Versions come from GitVersion.MsBuild out of the git tags, for example `1.0.3-1` for the first
   commit after tag `1.0.2`. Never edit a version property or an assembly version by hand.
-- Restore needs nuget.org. Several private feeds are configured globally on this machine, a public
-  package that one of them answers with 404 fails restore with `NU1301`. Then build with an explicit
-  source: `dotnet build src/Mp3FileChecker.sln --source https://api.nuget.org/v3/index.json`.
+- Restore needs nuget.org. Several private feeds are configured globally on this machine. When one
+  of them is unreachable (no VPN) or answers 404 for a public package, restore fails with `NU1900`
+  or `NU1301`, and `TreatWarningsAsErrors` turns that into a build error. Then build with an
+  explicit source:
+  `dotnet build src/Mp3FileChecker.sln --source https://api.nuget.org/v3/index.json`.
 - There is no test project in this repository. A behaviour change is verified by building and by
   running the tool with `--test-mode` against a small folder tree, which logs everything and writes
   nothing. Never claim a run happened without running it.
@@ -153,8 +155,9 @@ Do not silently "clean up" these, they are existing behaviour:
 - **The log file is written to the current directory.** `WriteTo.File($"log{...:yyyyMMdd_HHmmss}.txt")`
   builds a new file name per start, relative to wherever the tool was started, not next to the
   executable and not below the music folder.
-- **`README.md` claims Net 8.0** while the project targets `net9.0`. The "Available for" section has
-  been behind before, fix it together with a framework change instead of leaving it.
+- **The "Available for" section of `README.md`** claimed Net 8.0 while the project already targeted
+  `net9.0`. It is the only place besides the project file that names the framework, update it in the
+  same commit as a framework change instead of leaving it behind again.
 - **AppVeyor badge without CI in the repository.** `README.md` links an AppVeyor build that is
   configured outside of this repository. There is no `.github` folder and no pipeline file here.
 - **`.gitignore` does not cover the publish output.** `buildForWindows.bat` writes into
