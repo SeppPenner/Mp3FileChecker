@@ -6,7 +6,9 @@ Mp3FileChecker is a console application that walks a music folder tree and check
 the MP3 files in it against a fixed naming and tagging convention. Findings are written to the log,
 a part of them is corrected in the file itself unless the test mode is on. The repository is an
 application, it is **not** published as a NuGet package: no `GeneratePackageOnBuild`, no push
-script, no installer. The release artifact is a zip of the publish output below `Published`.
+script, no installer. The release artifact is a zip of the publish output, attached to the GitHub
+release of the version tag. Up to and including version 1.0.3 those zips were committed below
+`Published` instead, which is why the git history carries one copy per release.
 
 One solution `src/Mp3FileChecker.sln` with exactly two projects:
 
@@ -45,9 +47,10 @@ Layout inside `src/Mp3FileChecker.Tests`:
 - `GlobalUsings.cs`: all usings of the test project.
 
 Repository root: `README.md` (uppercase, the sibling repositories use `Readme.md`), `Changelog.md`,
-`License.txt` (MIT), `buildForWindows.bat`, the `Published` folder with one `publish.zip` per
-released version, `.gitattributes` and `.gitignore`. There is no `.github` folder, no
-`Updating.md`, no `HowToUse.md` and no screenshots.
+`License.txt` (MIT), `buildForWindows.bat`, `.gitattributes` and `.gitignore`. The `Published`
+folder still holds one `publish.zip` per released version on disk, but it is not tracked any more,
+the zips hang on the GitHub releases. There is no `.github` folder, no `Updating.md`, no
+`HowToUse.md` and no screenshots.
 
 ## The convention that is checked
 
@@ -192,11 +195,12 @@ Do not silently "clean up" these, they are existing behaviour:
   same commit as a framework change instead of leaving it behind again.
 - **AppVeyor badge without CI in the repository.** `README.md` links an AppVeyor build that is
   configured outside of this repository. There is no `.github` folder and no pipeline file here.
-- **The publish folder is ignored, the zip is not.** `buildForWindows.bat` writes into
+- **The publish folder and the zips are both ignored.** `buildForWindows.bat` writes into
   `src/Mp3FileChecker/publish`, which `.gitignore` covers since version 1.0.3.0. Before that only
   `*.exe` and `*.pdb` in it were ignored and a `git add -A` after a publish would have swallowed 200
-  DLLs. The rule is `publish/`, it does not touch the `Published` folder, whose zips are the release
-  artifacts and belong into the repository.
+  DLLs. `Published/` joined the rules when the zips moved to the GitHub releases, so a zip needs
+  `git add -f` to get into the repository. Do not do that, 1.0.3 alone is 37 MB and stays in the
+  history forever.
 - **`.gitattributes` sets `* text=auto`** and every rule of the Visual Studio template below it is
   commented out. The `publish.zip` files are only treated as binary because git guesses right on
   their content. Any further binary file needs its own rule.
@@ -213,16 +217,35 @@ The history of this repository shows the pattern, follow it:
    tags are lightweight tags, create new ones the same way. The tag has to exist **before** the
    publish, otherwise GitVersion burns a prerelease version such as `1.0.3-1+Branch.master.Sha...`
    into the shipped executable.
-5. Run `buildForWindows.bat`, zip the resulting `src/Mp3FileChecker/publish` folder to
-   `Published/<version>/publish.zip` (the zip keeps the `publish` folder as its top level entry) and
-   commit that as a follow-up commit, the way `51fb0f3` and `15cd886` did it.
+5. Run `buildForWindows.bat` and zip the resulting `src/Mp3FileChecker/publish` folder to
+   `Published/<version>/publish.zip` (the zip keeps the `publish` folder as its top level entry).
+   `Published/` is ignored, the zip stays out of the repository.
 6. Push the commits and the tag.
+7. Attach the zip to the GitHub release of that tag, as `publish.zip`. **Never commit it.** Up to
+   and including 1.0.3 it was committed, the way `51fb0f3` and `15cd886` did it, and every
+   committed copy stays in the history for good.
 
 Two things about step 5 on this machine. `cmd` runs with `NoDefaultCurrentDirectoryInExePath`, so
 the batch has to be started as `call .\buildForWindows.bat` from the repository root, the `cd
 src\Mp3FileChecker` inside it is relative to that. And when a private feed is unreachable, add
 `--source https://api.nuget.org/v3/index.json` to the `dotnet publish` line of that run, do not pin
 the source in the batch, it has to keep working on other machines.
+
+For step 7 there is no `gh` on this machine. The GitHub API does the job, with the token that
+`git push` already uses, so nothing has to be stored anywhere:
+
+```bash
+c=$(printf "protocol=https\nhost=github.com\n\n" | git credential fill)
+tok=$(printf "%s" "$c" | grep '^password=' | cut -d= -f2-)
+id=$(curl -s -X POST -H "Authorization: Bearer $tok" \
+  https://api.github.com/repos/SeppPenner/Mp3FileChecker/releases \
+  -d '{"tag_name":"1.0.4","name":"1.0.4"}' | grep -m1 '"id"' | tr -dc 0-9)
+curl -s -X POST -H "Authorization: Bearer $tok" -H "Content-Type: application/octet-stream" \
+  --data-binary @Published/1.0.4/publish.zip \
+  "https://uploads.github.com/repos/SeppPenner/Mp3FileChecker/releases/$id/assets?name=publish.zip"
+```
+
+Never print that token, and never write it into a file.
 
 The version in the `Changelog.md` has four parts (`1.0.3.0`), the tag has three (`1.0.3`), the folder
 below `Published` uses the three part form as well.
